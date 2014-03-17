@@ -15,7 +15,7 @@
 
 using namespace Leap;
 
-std::ofstream fout("log.txt");
+std::ofstream fout("FingerMove.csv");
 
 class SampleListener : public Listener {
 public:
@@ -71,7 +71,8 @@ void SampleListener::onFrame(const Controller& controller) {
 			Vector avgPos;
 			for (int i = 0; i < fingers.count(); ++i) {
 				avgPos += fingers[i].tipPosition();
-				fout << i << " , " << fingers[i].isTool() << " , " << fingers[i].tipPosition() << std::endl;
+				fout << i << " , " << fingers[i].isTool() << " , " << fingers[i].tipPosition().x <<
+					" , " << fingers[i].tipPosition().y << " , " << fingers[i].tipPosition().z << std::endl;
 			}
 			avgPos /= (float)fingers.count();
 			std::cout << "Hand has " << fingers.count()
