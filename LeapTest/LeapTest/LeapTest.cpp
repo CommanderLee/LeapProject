@@ -72,7 +72,8 @@ void SampleListener::onFrame(const Controller& controller) {
 			for (int i = 0; i < fingers.count(); ++i) {
 				avgPos += fingers[i].tipPosition();
 				fout << i << " , " << fingers[i].isTool() << " , " << fingers[i].tipPosition().x <<
-					" , " << fingers[i].tipPosition().y << " , " << fingers[i].tipPosition().z << std::endl;
+					" , " << fingers[i].tipPosition().y << " , " << fingers[i].tipPosition().z << 
+					" , " << frame.timestamp() << std::endl;
 			}
 			avgPos /= (float)fingers.count();
 			std::cout << "Hand has " << fingers.count()
