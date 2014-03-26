@@ -75,6 +75,7 @@ void SampleListener::onFrame(const Controller& controller) {
 					" , " << fingers[i].tipPosition().y << " , " << fingers[i].tipPosition().z << 
 					" , " << frame.timestamp() << std::endl;
 			}
+			
 			avgPos /= (float)fingers.count();
 			std::cout << "Hand has " << fingers.count()
 				<< " fingers, average finger tip position" << avgPos << std::endl;
@@ -94,73 +95,73 @@ void SampleListener::onFrame(const Controller& controller) {
 			<< "yaw: " << direction.yaw() * RAD_TO_DEG << " degrees" << std::endl;
 	}
 
-	// Get gestures
-	const GestureList gestures = frame.gestures();
-	for (int g = 0; g < gestures.count(); ++g) {
-		Gesture gesture = gestures[g];
+	//// Get gestures
+	//const GestureList gestures = frame.gestures();
+	//for (int g = 0; g < gestures.count(); ++g) {
+	//	Gesture gesture = gestures[g];
 
-		switch (gesture.type()) {
-		case Gesture::TYPE_CIRCLE:
-			{
-				CircleGesture circle = gesture;
-				std::string clockwiseness;
+	//	switch (gesture.type()) {
+	//	case Gesture::TYPE_CIRCLE:
+	//		{
+	//			CircleGesture circle = gesture;
+	//			std::string clockwiseness;
 
-				if (circle.pointable().direction().angleTo(circle.normal()) <= PI/4) {
-					clockwiseness = "clockwise";
-				} else {
-					clockwiseness = "counterclockwise";
-				}
+	//			if (circle.pointable().direction().angleTo(circle.normal()) <= PI/4) {
+	//				clockwiseness = "clockwise";
+	//			} else {
+	//				clockwiseness = "counterclockwise";
+	//			}
 
-				// Calculate angle swept since last frame
-				float sweptAngle = 0;
-				if (circle.state() != Gesture::STATE_START) {
-					CircleGesture previousUpdate = CircleGesture(controller.frame(1).gesture(circle.id()));
-					sweptAngle = (circle.progress() - previousUpdate.progress()) * 2 * PI;
-				}
-				std::cout << "Circle id: " << gesture.id()
-					<< ", state: " << gesture.state()
-					<< ", progress: " << circle.progress()
-					<< ", radius: " << circle.radius()
-					<< ", angle " << sweptAngle * RAD_TO_DEG
-					<<  ", " << clockwiseness << std::endl;
-				break;
-			}
-		case Gesture::TYPE_SWIPE:
-			{
-				SwipeGesture swipe = gesture;
-				std::cout << "Swipe id: " << gesture.id()
-					<< ", state: " << gesture.state()
-					<< ", direction: " << swipe.direction()
-					<< ", speed: " << swipe.speed() << std::endl;
-				break;
-			}
-		case Gesture::TYPE_KEY_TAP:
-			{
-				KeyTapGesture tap = gesture;
-				std::cout << "Key Tap id: " << gesture.id()
-					<< ", state: " << gesture.state()
-					<< ", position: " << tap.position()
-					<< ", direction: " << tap.direction()<< std::endl;
-				break;
-			}
-		case Gesture::TYPE_SCREEN_TAP:
-			{
-				ScreenTapGesture screentap = gesture;
-				std::cout << "Screen Tap id: " << gesture.id()
-					<< ", state: " << gesture.state()
-					<< ", position: " << screentap.position()
-					<< ", direction: " << screentap.direction()<< std::endl;
-				break;
-			}
-		default:
-			std::cout << "Unknown gesture type." << std::endl;
-			break;
-		}
-	}
+	//			// Calculate angle swept since last frame
+	//			float sweptAngle = 0;
+	//			if (circle.state() != Gesture::STATE_START) {
+	//				CircleGesture previousUpdate = CircleGesture(controller.frame(1).gesture(circle.id()));
+	//				sweptAngle = (circle.progress() - previousUpdate.progress()) * 2 * PI;
+	//			}
+	//			std::cout << "Circle id: " << gesture.id()
+	//				<< ", state: " << gesture.state()
+	//				<< ", progress: " << circle.progress()
+	//				<< ", radius: " << circle.radius()
+	//				<< ", angle " << sweptAngle * RAD_TO_DEG
+	//				<<  ", " << clockwiseness << std::endl;
+	//			break;
+	//		}
+	//	case Gesture::TYPE_SWIPE:
+	//		{
+	//			SwipeGesture swipe = gesture;
+	//			std::cout << "Swipe id: " << gesture.id()
+	//				<< ", state: " << gesture.state()
+	//				<< ", direction: " << swipe.direction()
+	//				<< ", speed: " << swipe.speed() << std::endl;
+	//			break;
+	//		}
+	//	case Gesture::TYPE_KEY_TAP:
+	//		{
+	//			KeyTapGesture tap = gesture;
+	//			std::cout << "Key Tap id: " << gesture.id()
+	//				<< ", state: " << gesture.state()
+	//				<< ", position: " << tap.position()
+	//				<< ", direction: " << tap.direction()<< std::endl;
+	//			break;
+	//		}
+	//	case Gesture::TYPE_SCREEN_TAP:
+	//		{
+	//			ScreenTapGesture screentap = gesture;
+	//			std::cout << "Screen Tap id: " << gesture.id()
+	//				<< ", state: " << gesture.state()
+	//				<< ", position: " << screentap.position()
+	//				<< ", direction: " << screentap.direction()<< std::endl;
+	//			break;
+	//		}
+	//	default:
+	//		std::cout << "Unknown gesture type." << std::endl;
+	//		break;
+	//	}
+	//}
 
-	if (!frame.hands().isEmpty() || !gestures.isEmpty()) {
-		std::cout << std::endl;
-	}
+	//if (!frame.hands().isEmpty() || !gestures.isEmpty()) {
+	//	std::cout << std::endl;
+	//}
 }
 
 void SampleListener::onFocusGained(const Controller& controller) {
@@ -175,6 +176,8 @@ int main() {
 	// Create a sample listener and controller
 	SampleListener listener;
 	Controller controller;
+
+	fout << "fingerID, isTool, X, Y, Z, timestamp(us)" << std::endl;
 
 	// Have the sample listener receive events from the controller
 	controller.addListener(listener);
