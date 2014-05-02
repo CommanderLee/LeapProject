@@ -7,6 +7,11 @@ import java.io.IOException;
 import java.util.Calendar;
 
 import android.app.Activity;
+import android.content.Context;
+import android.hardware.Sensor;
+import android.hardware.SensorEvent;
+import android.hardware.SensorEventListener;
+import android.hardware.SensorManager;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
@@ -27,21 +32,26 @@ import android.widget.Toast;
  */
 public class MainActivity extends Activity {
 
-	TextView		tvSDMem;
-	EditText		etTimeInterval;
-	Button			buttonStart, buttonEnd;
+	/** Objects on the Screen */
+	TextView			tvSDMem;
+	TextView			tvX, tvY, tvZ;
+	EditText			etTimeInterval;
+	Button				buttonStart, buttonEnd;
 	
-	File			sdCardDir = null;
-	FileWriter		fWriter = null;
-	long			startTime = 0;
-	double			timeInterval;
-	Handler			sensorHandler = null;
-	Runnable		runnable;
+	SensorManager		sManager = null;
+	SensorEventListener	myAccListener;
+	File				sdCardDir = null;
+	FileWriter			fWriter = null;
+	long				startTime = 0;
+	double				timeInterval;
+	double				dataX, dataY, dataZ;
+	Handler				sensorHandler = null;
+	Runnable			runnable;
 	
 	/** Set the range of the valid time interval */
-	final double	MIN_TIME = 1.0;
-	final double	MAX_TIME = 10.0;
-	final double	DEFAULT_TIME = 5.0;
+	final double		MIN_TIME = 1.0;
+	final double		MAX_TIME = 10.0;
+	final double		DEFAULT_TIME = 5.0;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +60,10 @@ public class MainActivity extends Activity {
         
         detectSDCard();
         etTimeInterval = (EditText) findViewById(R.id.editTextTime);
+        tvX = (TextView) findViewById(R.id.textViewSensorX);
+        tvY = (TextView) findViewById(R.id.textViewSensorY);
+        tvZ = (TextView) findViewById(R.id.textViewSensorZ);
+        setSensorManager();
         setButtonListener();
     }
 
@@ -60,8 +74,6 @@ public class MainActivity extends Activity {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
-    
-    
     
     @Override
 	protected void onDestroy() {
@@ -77,6 +89,10 @@ public class MainActivity extends Activity {
 		if (sensorHandler != null)
 		{
 			sensorHandler.removeCallbacks(runnable);
+		}
+		if (sManager != null)
+		{
+			sManager.unregisterListener(myAccListener);
 		}
 	}
 
@@ -106,6 +122,33 @@ public class MainActivity extends Activity {
     }
     
     /**
+     * Set sensor manager and register listener
+     */
+    private void setSensorManager()
+    {
+    	sManager = (SensorManager) getSystemService(Context.SENSOR_SERVICE);
+    	myAccListener = new SensorEventListener() {
+			
+			@Override
+			public void onSensorChanged(SensorEvent event) {
+				if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+				{
+					/** Mark down the X,Y,Z data */
+					dataX = event.values[0];
+					dataY = event.values[1];
+					dataZ = event.values[2];
+				}
+			}
+			
+			@Override
+			public void onAccuracyChanged(Sensor sensor, int accuracy) {
+				Log.d("SENSOR", "Accuracy Changed");
+			}
+		};
+    	sManager.registerListener(myAccListener, sManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+    }
+    
+    /**
      * Set Listener of the Start / End Button.
      * Check the range of the Time Interval.
      */
@@ -132,7 +175,6 @@ public class MainActivity extends Activity {
 				{
 					/** Start the real work */
 					Toast.makeText(getApplicationContext(), "Start!", Toast.LENGTH_SHORT).show();
-					
 					recordSensor();
 				}
 			}
@@ -154,6 +196,7 @@ public class MainActivity extends Activity {
 						fWriter.close();
 						sensorHandler.removeCallbacks(runnable);
 						Toast.makeText(getApplicationContext(), "Write Succeed", Toast.LENGTH_SHORT).show();
+						sManager.unregisterListener(myAccListener);
 					} catch (IOException e) {
 						Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_SHORT).show();
 					}
@@ -199,8 +242,15 @@ public class MainActivity extends Activity {
 				public void run() {
 					/** Get data from the acceleration sensors */
 					try {
-						fWriter.write(String.valueOf(Calendar.getInstance().getTimeInMillis() - startTime) + ",");
+						/** Write them to file */
+						fWriter.write(String.valueOf(Calendar.getInstance().getTimeInMillis() - startTime) + ", " + String.valueOf(dataX) + ", "
+								+ String.valueOf(dataY) + ", " + String.valueOf(dataZ));
 						fWriter.write("\r\n");
+						
+						/** Display them on the screen */
+						tvX.setText(String.valueOf(dataX));
+						tvY.setText(String.valueOf(dataY));
+						tvZ.setText(String.valueOf(dataZ));
 					} catch (IOException e) {
 						Log.d("IO", "Write Failed");
 						e.printStackTrace();
