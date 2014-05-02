@@ -30,7 +30,7 @@
             android:id="@+id/textView1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="SD Memory:"
+            android:text="SD Card Memory: "
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <TextView
@@ -128,7 +128,7 @@
             android:id="@+id/TextView02"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Time Interval:"
+            android:text="Time Interval: "
             android:textAppearance="?android:attr/textAppearanceMedium" />
 
         <EditText
