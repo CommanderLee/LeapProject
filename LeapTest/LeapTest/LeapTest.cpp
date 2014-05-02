@@ -16,6 +16,7 @@
 using namespace Leap;
 
 std::ofstream fout("FingerMove.csv");
+std::ofstream tout("ToolMove.csv");
 
 class SampleListener : public Listener {
 public:
@@ -69,32 +70,48 @@ void SampleListener::onFrame(const Controller& controller) {
 		if (!fingers.isEmpty()) {
 			// Calculate the hand's average finger tip position
 			Vector avgPos;
+
+			fout << frame.timestamp() << " , ";
 			for (int i = 0; i < fingers.count(); ++i) {
 				avgPos += fingers[i].tipPosition();
-				fout << i << " , " << fingers[i].isTool() << " , " << fingers[i].tipPosition().x <<
-					" , " << fingers[i].tipPosition().y << " , " << fingers[i].tipPosition().z << 
-					" , " << frame.timestamp() << std::endl;
+				fout << i << " , " << fingers[i].tipPosition().x << " , " << fingers[i].tipPosition().y 
+					<< " , " << fingers[i].tipPosition().z << " , ";
 			}
-			
+			fout << std::endl;
+
 			avgPos /= (float)fingers.count();
 			std::cout << "Hand has " << fingers.count()
 				<< " fingers, average finger tip position" << avgPos << std::endl;
 		}
 
 		// Get the hand's sphere radius and palm position
-		std::cout << "Hand sphere radius: " << hand.sphereRadius()
-			<< " mm, palm position: " << hand.palmPosition() << std::endl;
+		//std::cout << "Hand sphere radius: " << hand.sphereRadius()
+		//	<< " mm, palm position: " << hand.palmPosition() << std::endl;
 
 		// Get the hand's normal vector and direction
-		const Vector normal = hand.palmNormal();
-		const Vector direction = hand.direction();
+		// const Vector normal = hand.palmNormal();
+		// const Vector direction = hand.direction();
 
 		// Calculate the hand's pitch, roll, and yaw angles
-		std::cout << "Hand pitch: " << direction.pitch() * RAD_TO_DEG << " degrees, "
+		/*std::cout << "Hand pitch: " << direction.pitch() * RAD_TO_DEG << " degrees, "
 			<< "roll: " << normal.roll() * RAD_TO_DEG << " degrees, "
-			<< "yaw: " << direction.yaw() * RAD_TO_DEG << " degrees" << std::endl;
+			<< "yaw: " << direction.yaw() * RAD_TO_DEG << " degrees" << std::endl;*/
 	}
 
+	if (!frame.tools().isEmpty())
+	{
+		const ToolList tools = frame.tools();
+		tout << frame.timestamp() << " , ";
+		for (int i = 0; i < tools.count(); ++i)
+		{
+			tout << i << " , " << tools[i].tipPosition().x << " , " << tools[i].tipPosition().y << " , " << 
+				tools[i].tipPosition().z << " , ";
+			std::cout << i << " , " << tools[i].tipPosition().x << " , " << tools[i].tipPosition().y << " , " << 
+				tools[i].tipPosition().z << " , " << frame.timestamp() << std::endl;
+		}
+
+		tout << std::endl;
+	}
 	//// Get gestures
 	//const GestureList gestures = frame.gestures();
 	//for (int g = 0; g < gestures.count(); ++g) {
@@ -177,7 +194,8 @@ int main() {
 	SampleListener listener;
 	Controller controller;
 
-	fout << "fingerID, isTool, X, Y, Z, timestamp(us)" << std::endl;
+	fout << "timestamp(us), fingerID, X1, Y1, Z1, fingerID, X2, Y2, Z2, fingerID, X3, Y3, Z3" << std::endl;
+	tout << "timestamp(us), toolID,   X1, Y1, Z1, toolID,   X2, Y2, Z2, toolID,   X3, Y3, Z3" << std::endl;
 
 	// Have the sample listener receive events from the controller
 	controller.addListener(listener);

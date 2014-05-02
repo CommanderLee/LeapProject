@@ -1,12 +1,12 @@
 % Process the output data of Leap C++ project.
 % LI ZHEN, March 17th, 2014.
 
-fid = fopen('result3.csv', 'w');
-fprintf(fid, 'id, mean, totalTime(us)\n');
+% fid = fopen('toolResult1.csv', 'w');
+% fprintf(fid, 'id, mean, totalTime(us)\n');
 
-for i = 30:33
+for i = 10:12
     filename = sprintf('FingerMove%d.csv', i);
-    % fingerNo isTool x y z time
+    % time id1 x1 y1 z1 id2 x2 y2 z2 id3 x3 y3 z3
     mat = csvread(filename, 1, 0);
 %     figure;
 %     scatter3(mat(:, 3), mat(:, 4), mat(:, 5), '.');
