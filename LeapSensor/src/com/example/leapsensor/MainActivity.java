@@ -1,6 +1,10 @@
 package com.example.leapsensor;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.Calendar;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -14,6 +18,11 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * Main Activity of the Leap Project on Android App.
+ * @author Zhen Li
+ * @version 1.0 May 1st 2014
+ */
 public class MainActivity extends Activity {
 
 	File			sdCardDir = null;
@@ -98,10 +107,54 @@ public class MainActivity extends Activity {
 				}
 				else
 				{
+					/** Start the real work */
 					Toast start = Toast.makeText(getApplicationContext(), "Start!", Toast.LENGTH_SHORT);
 					start.show();
+					
+					recordSensor();
 				}
 			}
 		});
+    }
+    
+    /**
+     * Record the Sensor Data and write them on a file in the SD Card.
+     */
+    private void recordSensor()
+    {
+    	if (sdCardDir == null)
+    	{
+    		/** SD Card not available */
+        	Toast errSD = Toast.makeText(getApplicationContext(), "SD Card Not Found", Toast.LENGTH_SHORT);
+        	errSD.show();
+        	return;
+    	}
+    	
+    	String path = sdCardDir + "/LeapData";
+    	String name = "/" + Calendar.getInstance().getTime().toString() + ".csv";
+    	
+    	File fPath = new File(path);
+    	File fName = new File(path + name);
+    	
+    	if (!fPath.exists())
+    	{
+    		fPath.mkdir();
+    	}
+    	
+    	try {
+    		fName.createNewFile();
+    		FileWriter fw = new FileWriter(fName);
+    		fw.write("1.0, 1, 2, 3");
+    		fw.write("\r\n");
+    		fw.write("2.0, 4, 5, 6");
+    		fw.write("\r\n");
+    		fw.close();
+
+    		Toast.makeText(getApplicationContext(), "Write Succeed", Toast.LENGTH_SHORT).show();
+    	} catch (FileNotFoundException e) {
+    		Toast.makeText(getApplicationContext(), "File Not Found", Toast.LENGTH_SHORT).show();
+    	} catch (IOException e) {
+    		Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_SHORT).show();
+    	}
     }
 }
