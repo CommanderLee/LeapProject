@@ -47,6 +47,7 @@ public class MainActivity extends Activity {
 	double				dataX, dataY, dataZ;
 	Handler				sensorHandler = null;
 	Runnable			runnable;
+	int					fileNo;
 	
 	/** Set the range of the valid time interval */
 	final double		MIN_TIME = 1.0;
@@ -57,6 +58,8 @@ public class MainActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        
+        fileNo = 0;
         
         detectSDCard();
         etTimeInterval = (EditText) findViewById(R.id.editTextTime);
@@ -131,7 +134,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onSensorChanged(SensorEvent event) {
-				if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER)
+				if (event.sensor.getType() == Sensor.TYPE_LINEAR_ACCELERATION)
 				{
 					/** Mark down the X,Y,Z data */
 					dataX = event.values[0];
@@ -145,7 +148,7 @@ public class MainActivity extends Activity {
 				Log.d("SENSOR", "Accuracy Changed");
 			}
 		};
-    	sManager.registerListener(myAccListener, sManager.getDefaultSensor(Sensor.TYPE_ACCELEROMETER), SensorManager.SENSOR_DELAY_NORMAL);
+    	// sManager.registerListener(myAccListener, sManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
     }
     
     /**
@@ -185,7 +188,7 @@ public class MainActivity extends Activity {
 			
 			@Override
 			public void onClick(View v) {
-				if (fWriter == null || sensorHandler == null)
+				if (fWriter == null || sensorHandler == null || sManager == null)
 				{
 					Toast.makeText(getApplicationContext(), "Not Started", Toast.LENGTH_SHORT).show();
 				}
@@ -195,8 +198,11 @@ public class MainActivity extends Activity {
 					try {
 						fWriter.close();
 						sensorHandler.removeCallbacks(runnable);
-						Toast.makeText(getApplicationContext(), "Write Succeed", Toast.LENGTH_SHORT).show();
 						sManager.unregisterListener(myAccListener);
+						
+						fWriter = null;
+						sensorHandler = null;
+						Toast.makeText(getApplicationContext(), "Write Succeed", Toast.LENGTH_SHORT).show();
 					} catch (IOException e) {
 						Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_SHORT).show();
 					}
@@ -220,7 +226,7 @@ public class MainActivity extends Activity {
     	
     	/** Store the data in '/sdcard0/LeapData/[LocalCalendarTime].csv' */
     	String path = sdCardDir + "/LeapData";
-    	String name = "/" + Calendar.getInstance().getTime().toString() + ".csv";
+    	String name = "/" + Calendar.getInstance().getTime().toString() + "-" + String.valueOf(fileNo) + ".csv";
     	
     	File fPath = new File(path);
     	File fName = new File(path + name);
@@ -233,6 +239,8 @@ public class MainActivity extends Activity {
     	try {
     		fName.createNewFile();
     		fWriter = new FileWriter(fName);
+    		++fileNo;
+    		Log.d("SENSOR", String.valueOf(fileNo));
     		
     		/** Write for each timeInterval ms */
     		sensorHandler = new Handler();
@@ -260,6 +268,7 @@ public class MainActivity extends Activity {
 				}
 			};
 			startTime = Calendar.getInstance().getTimeInMillis();
+			sManager.registerListener(myAccListener, sManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
     		sensorHandler.postDelayed(runnable, (long)timeInterval);
 			
     		/*FileWriter fw = new FileWriter(fName);
