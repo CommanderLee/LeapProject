@@ -47,6 +47,9 @@ public class MainActivity extends Activity {
 	double				dataX, dataY, dataZ;
 	Handler				sensorHandler = null;
 	Runnable			runnable;
+	//Intent			intent = null;
+	//PendingIntent		pIntent = null;
+	//AlarmManager		alarm = null;
 	int					fileNo;
 	
 	/** Set the range of the valid time interval */
@@ -93,6 +96,10 @@ public class MainActivity extends Activity {
 		{
 			sensorHandler.removeCallbacks(runnable);
 		}
+/*		if (alarm != null)
+		{
+			alarm.cancel(pIntent);
+		}*/
 		if (sManager != null)
 		{
 			sManager.unregisterListener(myAccListener);
@@ -148,7 +155,6 @@ public class MainActivity extends Activity {
 				Log.d("SENSOR", "Accuracy Changed");
 			}
 		};
-    	// sManager.registerListener(myAccListener, sManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
     }
     
     /**
@@ -174,6 +180,10 @@ public class MainActivity extends Activity {
 					Toast.makeText(getApplicationContext(), "Time Interval too big", Toast.LENGTH_SHORT).show();
 					etTimeInterval.setText(String.valueOf(DEFAULT_TIME));
 				}
+				else if (fWriter != null)
+				{
+					Toast.makeText(getApplicationContext(), "Already started", Toast.LENGTH_SHORT).show();
+				}
 				else
 				{
 					/** Start the real work */
@@ -189,6 +199,7 @@ public class MainActivity extends Activity {
 			@Override
 			public void onClick(View v) {
 				if (fWriter == null || sensorHandler == null || sManager == null)
+				//if (fWriter == null || sManager == null || alarm == null)
 				{
 					Toast.makeText(getApplicationContext(), "Not Started", Toast.LENGTH_SHORT).show();
 				}
@@ -199,8 +210,10 @@ public class MainActivity extends Activity {
 						fWriter.close();
 						sensorHandler.removeCallbacks(runnable);
 						sManager.unregisterListener(myAccListener);
+						//alarm.cancel(pIntent);
 						
 						fWriter = null;
+						//alarm = null;
 						sensorHandler = null;
 						Toast.makeText(getApplicationContext(), "Write Succeed", Toast.LENGTH_SHORT).show();
 					} catch (IOException e) {
@@ -243,6 +256,10 @@ public class MainActivity extends Activity {
     		Log.d("SENSOR", String.valueOf(fileNo));
     		
     		/** Write for each timeInterval ms */
+/*    		intent = new Intent(this, MyBroadcastReceiver.class);
+    		pIntent = PendingIntent.getBroadcast(getApplicationContext(), 0, intent, Intent.FLAG_ACTIVITY_NEW_TASK);
+    		alarm = (AlarmManager) getSystemService(ALARM_SERVICE);
+    		*/
     		sensorHandler = new Handler();
     		runnable = new Runnable() {
 				
@@ -270,19 +287,35 @@ public class MainActivity extends Activity {
 			startTime = Calendar.getInstance().getTimeInMillis();
 			sManager.registerListener(myAccListener, sManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_NORMAL);
     		sensorHandler.postDelayed(runnable, (long)timeInterval);
+			//alarm.setRepeating(AlarmManager.ELAPSED_REALTIME_WAKEUP, SystemClock.elapsedRealtime(), (long)timeInterval, pIntent);
 			
-    		/*FileWriter fw = new FileWriter(fName);
-    		fw.write("1.0, 1, 2, 3");
-    		fw.write("\r\n");
-    		fw.write("2.0, 4, 5, 6");
-    		fw.write("\r\n");
-    		fw.close();
-    		Toast.makeText(getApplicationContext(), "Write Succeed", Toast.LENGTH_SHORT).show();
-    		*/
     	} catch (FileNotFoundException e) {
     		Toast.makeText(getApplicationContext(), "File Not Found", Toast.LENGTH_SHORT).show();
     	} catch (IOException e) {
     		Toast.makeText(getApplicationContext(), "IOException", Toast.LENGTH_SHORT).show();
     	}
     }
+    
+/*    public class MyBroadcastReceiver extends BroadcastReceiver
+    {
+
+		@Override
+		public void onReceive(Context context, Intent intent) {
+			try {
+				*//** Write them to file *//*
+				fWriter.write(String.valueOf(Calendar.getInstance().getTimeInMillis() - startTime) + ", " + String.valueOf(dataX) + ", "
+						+ String.valueOf(dataY) + ", " + String.valueOf(dataZ));
+				fWriter.write("\r\n");
+				
+				*//** Display them on the screen *//*
+				tvX.setText(String.valueOf(dataX));
+				tvY.setText(String.valueOf(dataY));
+				tvZ.setText(String.valueOf(dataZ));
+			} catch (IOException e) {
+				Log.d("IO", "Write Failed");
+				e.printStackTrace();
+			}
+		}
+    	
+    }*/
 }
