@@ -20,8 +20,6 @@ import android.view.Menu;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -34,38 +32,42 @@ import android.widget.Toast;
 public class MainActivity extends Activity {
 
 	/** Set the range of the valid time interval */
-	final double		MIN_TIME = 1.0;
+	/*final double		MIN_TIME = 1.0;
 	final double		MAX_TIME = 10.0;
-	final double		DEFAULT_TIME = 5.0;
+	final double		DEFAULT_TIME = 5.0;*/
 	
 	final int			MAX_RECORD_NUM = 100000;
 	
 	/** Objects on the Screen */
 	LinearLayout		layout;
 	TextView			tvSDMem;
-	TextView			tvAccX, tvAccY, tvAccZ;
-	EditText			etTimeInterval;
-	Button				buttonStart, buttonEnd;
+	TextView			tvAccNo, tvGravityNo;
+	/*EditText			etTimeInterval;
+	Button				buttonStart, buttonEnd;*/
 	
+	/** Sensor Manager and Listener */
 	SensorManager		sManager = null;
 	SensorEventListener	mySensorListener;
+	
+	/** Files */
 	File				sdCardDir = null;
 	FileWriter			fWriter = null;
 	long				startTime = 0;
-	// double				timeInterval;
-	// double				dataX, dataY, dataZ;
+/*	double				timeInterval;
+	double				dataX, dataY, dataZ;
 	
-	// Handler				sensorHandler = null;
+	Handler				sensorHandler = null;
 	Runnable			runnable;
-	//Intent			intent = null;
-	//PendingIntent		pIntent = null;
-	//AlarmManager		alarm = null;
-	String				createTime;
+	Intent			intent = null;
+	PendingIntent		pIntent = null;
+	AlarmManager		alarm = null;*/
+	String				openTimeFilePrefix;
 	int					fileNo;
 	
+	/** Record the Data */
 	boolean				isRecording;
-	int					recordAccNo;
-	double[][]			recordAccData;
+	int					recordAccNo, recordGravityNo;
+	double[][]			recordAccData, recordGravityData;
 	
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,19 +77,19 @@ public class MainActivity extends Activity {
         detectSDCard();
         
         layout = (LinearLayout) findViewById(R.id.layoutTotal);
-        etTimeInterval = (EditText) findViewById(R.id.editTextTime);
-        tvAccX = (TextView) findViewById(R.id.textViewAccSensorX);
-        tvAccY = (TextView) findViewById(R.id.textViewAccSensorY);
-        tvAccZ = (TextView) findViewById(R.id.textViewAccSensorZ);
+        // etTimeInterval = (EditText) findViewById(R.id.editTextTime);
+        tvAccNo = (TextView) findViewById(R.id.textViewAccNo);
+        tvGravityNo = (TextView) findViewById(R.id.textViewGravityNo);
         
-        createTime = Calendar.getInstance().getTime().toString();
+        openTimeFilePrefix = Calendar.getInstance().getTime().toString();
         fileNo = 0;       
         isRecording = false;
         recordAccNo = 0;
+        recordGravityNo = 0;
         //recordAccData = new double [MAX_RECORD_NUM] [4];
         
         setSensorManager();
-        setListener();
+        setTouchListener();
     }
 
 
@@ -162,7 +164,7 @@ public class MainActivity extends Activity {
 				{
 					if (recordAccNo == MAX_RECORD_NUM)
 					{
-						Log.d("RECORD", "Memory Limit Exceeded");
+						Log.d("RECORD", "Acc: Memory Limit Exceeded");
 						return ;
 					}
 					/** Mark down the Acceleration X,Y,Z data */
@@ -173,10 +175,27 @@ public class MainActivity extends Activity {
 					}
 					++recordAccNo;
 					if (recordAccNo % 10 == 0)
-						tvAccX.setText(String.valueOf(recordAccNo));
+						tvAccNo.setText(String.valueOf(recordAccNo));
 /*					dataX = event.values[0];
 					dataY = event.values[1];
 					dataZ = event.values[2];*/
+				}
+				else if (event.sensor.getType() == Sensor.TYPE_GRAVITY && isRecording)
+				{
+					if (recordGravityNo == MAX_RECORD_NUM)
+					{
+						Log.d("RECORD", "Gravity: Memory Limit Exceeded");
+						return ;
+					}
+					/** Mark down the Gravity Sensor X,Y,Z data */
+					recordGravityData[recordGravityNo][0] = Calendar.getInstance().getTimeInMillis() - startTime;
+					for (int i = 0; i < 3; ++i)
+					{
+						recordGravityData[recordGravityNo][i + 1] = event.values[i];
+					}
+					++recordGravityNo;
+					if (recordGravityNo % 10 == 0)
+						tvGravityNo.setText(String.valueOf(recordGravityNo));
 				}
 			}
 			
@@ -186,13 +205,14 @@ public class MainActivity extends Activity {
 			}
 		};
 		sManager.registerListener(mySensorListener, sManager.getDefaultSensor(Sensor.TYPE_LINEAR_ACCELERATION), SensorManager.SENSOR_DELAY_FASTEST);
+		sManager.registerListener(mySensorListener, sManager.getDefaultSensor(Sensor.TYPE_GRAVITY), SensorManager.SENSOR_DELAY_FASTEST);
     }
     
     /**
      * Set Listener of the Start / End Button.
      * Check the range of the Time Interval.
      */
-    private void setListener()
+    private void setTouchListener()
     {
     	layout.setOnTouchListener(new OnTouchListener() {
 			
@@ -200,16 +220,23 @@ public class MainActivity extends Activity {
 			public boolean onTouch(View v, MotionEvent event) {
 				switch (event.getAction())
 				{
+				/** Start recording */
 				case MotionEvent.ACTION_DOWN:
 					if (!isRecording)
 					{
 						Toast.makeText(getApplicationContext(), "Start!", Toast.LENGTH_SHORT).show();
 						startTime = Calendar.getInstance().getTimeInMillis();
+						
 						recordAccNo = 0;
 						recordAccData = new double [MAX_RECORD_NUM] [4];
+						
+						recordGravityNo = 0;
+						recordGravityData = new double [MAX_RECORD_NUM] [4];
+						
 						isRecording = true;
 					}
 					break;
+				/** End recording and write into file. */
 				case MotionEvent.ACTION_UP:
 					if (isRecording)
 					{
@@ -297,7 +324,7 @@ public class MainActivity extends Activity {
     	
     	/** Store the data in '/sdcard0/LeapData/[CreateTime]-[fileNo].csv' */
     	String path = sdCardDir + "/LeapData";
-    	String name = "/" + createTime + "-" + String.valueOf(fileNo) + ".csv";
+    	String name = "/" + openTimeFilePrefix + "-" + String.valueOf(fileNo) + ".csv";
     	
     	File fPath = new File(path);
     	File fName = new File(path + name);
@@ -313,15 +340,47 @@ public class MainActivity extends Activity {
     		++fileNo;
     		Log.d("WRITE", "Create files: " + String.valueOf(fileNo));
     		
-    		fWriter.write("Time, AccX, AccY, AccZ\r\n");
+    		fWriter.write("AccTime, AccX, AccY, AccZ, GravityTime, GravityX, GravityY, GravityZ\r\n");
     		
-    		for (int i = 0; i < recordAccNo; ++i)
+    		int minRecord = Math.min(recordAccNo, recordGravityNo);
+    		for (int i = 0; i < minRecord; ++i)
     		{
-    			for (int j = 0; j < 3; ++j)
+    			for (int j = 0; j < 4; ++j)
     			{
     				fWriter.write(String.valueOf(recordAccData[i][j]) + ", ");
     			}
-    			fWriter.write(String.valueOf(recordAccData[i][3]) + "\r\n");
+    			
+    			for (int j = 0; j < 3; ++j)
+    			{
+    				fWriter.write(String.valueOf(recordGravityData[i][j]) + ", ");
+    			}
+    			fWriter.write(String.valueOf(recordGravityData[i][3]) + "\r\n");
+    		}
+    		
+    		if (minRecord < recordAccNo)
+    		{
+    			for (int i = minRecord; i < recordAccNo; ++i)
+        		{
+        			for (int j = 0; j < 4; ++j)
+        			{
+        				fWriter.write(String.valueOf(recordAccData[i][j]) + ", ");
+        			}
+        			
+        			fWriter.write("-1, -1, -1, -1\r\n");
+        		}
+    		}
+    		if (minRecord < recordGravityNo)
+    		{
+    			for (int i = minRecord; i < recordGravityNo; ++i)
+        		{
+        			fWriter.write("-1, -1, -1, -1, ");
+        			
+        			for (int j = 0; j < 3; ++j)
+        			{
+        				fWriter.write(String.valueOf(recordGravityData[i][j]) + ", ");
+        			}
+        			fWriter.write(String.valueOf(recordGravityData[i][3]) + "\r\n");
+        		}
     		}
     		
     		fWriter.close();

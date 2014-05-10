@@ -20,7 +20,7 @@
             android:id="@+id/linearLayout1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="46dp" >
+            android:gravity="top" >
 
             <TextView
                 android:id="@+id/textView1"
@@ -44,6 +44,7 @@
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
 
+		<!--  
         <LinearLayout
             android:id="@+id/LinearLayout01"
             android:layout_width="wrap_content"
@@ -75,7 +76,7 @@
                 android:text="ms"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
-		<!--  
+
         <Button
             android:id="@+id/buttonStart"
             android:layout_width="wrap_content"
@@ -105,11 +106,11 @@
                     android:id="@+id/textView4"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="X: "
+                    android:text="AccRecordNo: "
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:id="@+id/textViewAccSensorX"
+                    android:id="@+id/textViewAccNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" 0.0 "
@@ -125,31 +126,11 @@
                     android:id="@+id/textView6"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Y: "
+                    android:text="GravityRecordNo: "
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:id="@+id/textViewAccSensorY"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text=" 0.0 "
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-            </TableRow>
-
-            <TableRow
-                android:id="@+id/tableRow3"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" >
-
-                <TextView
-                    android:id="@+id/textView8"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Z: "
-                    android:textAppearance="?android:attr/textAppearanceMedium" />
-
-                <TextView
-                    android:id="@+id/textViewAccSensorZ"
+                    android:id="@+id/textViewGravityNo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" 0.0 "
