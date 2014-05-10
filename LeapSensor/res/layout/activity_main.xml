@@ -9,8 +9,9 @@
     tools:context=".MainActivity" >
 
     <LinearLayout
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+        android:id="@+id/layoutTotal"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
         android:layout_centerHorizontal="true"
         android:gravity="center_vertical|center_horizontal"
         android:orientation="vertical" >
@@ -74,7 +75,7 @@
                 android:text="ms"
                 android:textAppearance="?android:attr/textAppearanceMedium" />
         </LinearLayout>
-
+		<!--  
         <Button
             android:id="@+id/buttonStart"
             android:layout_width="wrap_content"
@@ -89,7 +90,7 @@
             android:layout_marginTop="32dp"
             android:minWidth="128dp"
             android:text="End" />
-
+		-->
         <TableLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -108,7 +109,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:id="@+id/textViewSensorX"
+                    android:id="@+id/textViewAccSensorX"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" 0.0 "
@@ -128,7 +129,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:id="@+id/textViewSensorY"
+                    android:id="@+id/textViewAccSensorY"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" 0.0 "
@@ -148,7 +149,7 @@
                     android:textAppearance="?android:attr/textAppearanceMedium" />
 
                 <TextView
-                    android:id="@+id/textViewSensorZ"
+                    android:id="@+id/textViewAccSensorZ"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text=" 0.0 "
