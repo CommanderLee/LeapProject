@@ -168,7 +168,8 @@ public class MainActivity extends Activity {
 						return ;
 					}
 					/** Mark down the Acceleration X,Y,Z data */
-					recordAccData[recordAccNo][0] = Calendar.getInstance().getTimeInMillis() - startTime;
+					// recordAccData[recordAccNo][0] = Calendar.getInstance().getTimeInMillis() - startTime;
+					recordAccData[recordAccNo][0] = (System.nanoTime() - startTime) / 1000000.0;
 					for (int i = 0; i < 3; ++i)
 					{
 						recordAccData[recordAccNo][i + 1] = event.values[i];
@@ -188,7 +189,8 @@ public class MainActivity extends Activity {
 						return ;
 					}
 					/** Mark down the Gravity Sensor X,Y,Z data */
-					recordGravityData[recordGravityNo][0] = Calendar.getInstance().getTimeInMillis() - startTime;
+					// recordGravityData[recordGravityNo][0] = Calendar.getInstance().getTimeInMillis() - startTime;
+					recordGravityData[recordAccNo][0] = (System.nanoTime() - startTime) / 1000000.0;
 					for (int i = 0; i < 3; ++i)
 					{
 						recordGravityData[recordGravityNo][i + 1] = event.values[i];
@@ -225,7 +227,8 @@ public class MainActivity extends Activity {
 					if (!isRecording)
 					{
 						Toast.makeText(getApplicationContext(), "Start!", Toast.LENGTH_SHORT).show();
-						startTime = Calendar.getInstance().getTimeInMillis();
+						// startTime = Calendar.getInstance().getTimeInMillis();
+						startTime = System.nanoTime();
 						
 						recordAccNo = 0;
 						recordAccData = new double [MAX_RECORD_NUM] [4];
