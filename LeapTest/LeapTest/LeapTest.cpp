@@ -11,12 +11,13 @@
 #include "stdafx.h"
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include "Leap.h"
 
 using namespace Leap;
 
-std::ofstream fout("FingerMove.csv");
-std::ofstream tout("ToolMove.csv");
+std::ofstream fout;//("FingerMove.csv");
+std::ofstream tout;//("ToolMove.csv");
 
 class SampleListener : public Listener {
 public:
@@ -190,6 +191,18 @@ void SampleListener::onFocusLost(const Controller& controller) {
 }
 
 int main() {
+
+	int num(9);
+
+	std::cout << "Num: " << num << std::endl;
+
+	std::stringstream strF, strT;
+	strF << "FingerMove1" << num << ".csv";
+	fout.open(strF.str());
+	
+	strT << "ToolMove1" << num << ".csv";
+	tout.open(strT.str());
+
 	// Create a sample listener and controller
 	SampleListener listener;
 	Controller controller;
@@ -207,6 +220,7 @@ int main() {
 	// Remove the sample listener when done
 	controller.removeListener(listener);
 	fout.close();
+	tout.close();
 
 	return 0;
 }
