@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
 	File				sdCardDir = null;
 	FileWriter			fWriter = null;
 	long				startTime = 0;
+	long				currentTime = 0;
 /*	double				timeInterval;
 	double				dataX, dataY, dataZ;
 	
@@ -229,6 +230,7 @@ public class MainActivity extends Activity {
 						Toast.makeText(getApplicationContext(), "Start!", Toast.LENGTH_SHORT).show();
 						// startTime = Calendar.getInstance().getTimeInMillis();
 						startTime = System.nanoTime();
+						currentTime = System.currentTimeMillis();
 						
 						recordAccNo = 0;
 						recordAccData = new double [MAX_RECORD_NUM] [4];
@@ -343,7 +345,9 @@ public class MainActivity extends Activity {
     		++fileNo;
     		Log.d("WRITE", "Create files: " + String.valueOf(fileNo));
     		
-    		fWriter.write("AccTime, AccX, AccY, AccZ, GravityTime, GravityX, GravityY, GravityZ\r\n");
+    		fWriter.write("CurrentTime(ms)\r\n");
+    		fWriter.write(String.valueOf(currentTime) + "\r\n");
+    		fWriter.write("AccTime(ms), AccX, AccY, AccZ, GravityTime(ms), GravityX, GravityY, GravityZ\r\n");
     		
     		int minRecord = Math.min(recordAccNo, recordGravityNo);
     		for (int i = 0; i < minRecord; ++i)
