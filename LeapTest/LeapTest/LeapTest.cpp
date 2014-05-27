@@ -12,6 +12,8 @@
 #include <iostream>
 #include <fstream>
 #include <sstream>
+#include <Windows.h>
+#include <ctime>
 #include "Leap.h"
 
 using namespace Leap;
@@ -61,13 +63,14 @@ void SampleListener::onFrame(const Controller& controller) {
 		<< ", fingers: " << frame.fingers().count()
 		<< ", tools: " << frame.tools().count()
 		<< ", gestures: " << frame.gestures().count() << std::endl;
-
+	//std::cout << "Fingers:" << frame.fingers().count() << ":";
 	if (!frame.hands().isEmpty()) {
 		// Get the first hand
 		const Hand hand = frame.hands()[0];
 
 		// Check if the hand has any fingers
 		const FingerList fingers = hand.fingers();
+		float x[10], y[10], z[10];
 		if (!fingers.isEmpty()) {
 			// Calculate the hand's average finger tip position
 			Vector avgPos;
@@ -75,8 +78,16 @@ void SampleListener::onFrame(const Controller& controller) {
 			fout << frame.timestamp() << " , ";
 			for (int i = 0; i < fingers.count(); ++i) {
 				avgPos += fingers[i].tipPosition();
-				fout << i << " , " << fingers[i].tipPosition().x << " , " << fingers[i].tipPosition().y 
-					<< " , " << fingers[i].tipPosition().z << " , ";
+				x[i] = fingers[i].tipPosition().x;
+				y[i] = fingers[i].tipPosition().y;
+				z[i] = fingers[i].tipPosition().z;
+				fout << i << " , " << x[i] << " , " << y[i] << " , " << z[i] << " , ";
+			}
+			if (fingers.count() <= 3)
+			{
+				fout << sqrt(pow(x[0] - x[1], 2) + pow(y[0] - y[1], 2) + pow(z[0]-z[1], 2)) << " , "
+					<< sqrt(pow(x[0] - x[2], 2) + pow(y[0] - y[2], 2) + pow(z[0]-z[2], 2)) << " , "
+					<< sqrt(pow(x[2] - x[1], 2) + pow(y[2] - y[1], 2) + pow(z[2]-z[1], 2)) << " , ";
 			}
 			fout << std::endl;
 
@@ -107,8 +118,8 @@ void SampleListener::onFrame(const Controller& controller) {
 		{
 			tout << i << " , " << tools[i].tipPosition().x << " , " << tools[i].tipPosition().y << " , " << 
 				tools[i].tipPosition().z << " , ";
-			std::cout << i << " , " << tools[i].tipPosition().x << " , " << tools[i].tipPosition().y << " , " << 
-				tools[i].tipPosition().z << " , " << frame.timestamp() << std::endl;
+			//std::cout << i << " , " << tools[i].tipPosition().x << " , " << tools[i].tipPosition().y << " , " << 
+			//	tools[i].tipPosition().z << " , " << frame.timestamp() << std::endl;
 		}
 
 		tout << std::endl;
@@ -192,24 +203,33 @@ void SampleListener::onFocusLost(const Controller& controller) {
 
 int main() {
 
-	int num(9);
+	int num(10);
 
 	std::cout << "Num: " << num << std::endl;
 
 	std::stringstream strF, strT;
-	strF << "FingerMove1" << num << ".csv";
+	strF << "FingerMove2" << num << ".csv";
 	fout.open(strF.str());
 	
-	strT << "ToolMove1" << num << ".csv";
+	strT << "ToolMove2" << num << ".csv";
 	tout.open(strT.str());
 
 	// Create a sample listener and controller
 	SampleListener listener;
 	Controller controller;
 
-	fout << "timestamp(us), fingerID, X1, Y1, Z1, fingerID, X2, Y2, Z2, fingerID, X3, Y3, Z3" << std::endl;
-	tout << "timestamp(us), toolID,   X1, Y1, Z1, toolID,   X2, Y2, Z2, toolID,   X3, Y3, Z3" << std::endl;
+	// Count from 00:00:00, Jan 1st, 1970.
+	SYSTEMTIME sys;
+	time_t timer;
+	time(&timer);
+	GetLocalTime(&sys);
+	fout << "time since 1970(s), ms" << std::endl;
+	tout << "time since 1970(s), ms" << std::endl;
+	fout << timer << ", " << sys.wMilliseconds << std::endl;
+	tout << timer << ", " << sys.wMilliseconds << std::endl;
 
+	fout << "timestamp(us), fingerID, X1, Y1, Z1, fingerID, X2, Y2, Z2, fingerID, X3, Y3, Z3, edge1, edge2, edge3" << std::endl;
+	tout << "timestamp(us), toolID,   X1, Y1, Z1, toolID,   X2, Y2, Z2, toolID,   X3, Y3, Z3" << std::endl;
 	// Have the sample listener receive events from the controller
 	controller.addListener(listener);
 
