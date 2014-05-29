@@ -1,6 +1,5 @@
 % Plot the trace data of Leap C++ project, and process them.
 % LI ZHEN, April 12th, 2014.
-
 for i = 2:2
     ModelType = 1;                          % 2 types of 3D models
     
@@ -18,11 +17,15 @@ for i = 2:2
     fileNo = sprintf('3%d0%d.csv', ModelType, i);
     fileName = sprintf('%s/FingerMove%s', dirName, fileNo);
     mat = csvread(fileName, 1, 0, [1 0 1 1]);
-    currTime = mat(1) * 1000 + mat(2);      % Get current time (ms)
+    
+    % Get current time (ms)
+    % Magic Time: 1401178000000ms
+    currTime = mat(1) * 1000 + mat(2) - 1401178000000;
     
     % timestamp(us) id1 x1 y1 z1 id2 x2 y2 z2 id3 x3 y3 z3 edge1 edge2 edge3
     % edge1:E12, edge2:E13, edge3:E23
-    mat = csvread(filename, 3, 0);
+    format long;
+    mat = csvread(fileName, 3, 0);
     
     fprintf('%d:\n', i);
     [row col] = size(mat);
@@ -54,10 +57,26 @@ for i = 2:2
         hold on;
         plot3(centerP(:, 2), centerP(:, 3), centerP(:, 4), '*g');
         
-        fileName = sprintf('%s/CenterPos%s', dirName, fileNo);
-        fid = fopen(fileName, 'w');
-        fprintf(fid, 'time(ms), x, y, z\n');
+        [pRow pCol] = size(centerP);
+        interval = 0.5;                 % interpolate with 0.5ms
+        interTime = centerP(1, 1): interval: centerP(pRow, 1);
+        interCPos = interp1(centerP(:, 1), centerP(:, 2:4), interTime, 'spline');
+        plot3(interCPos(:, 1), interCPos(:, 2), interCPos(:, 3), '.m');
+        [iRow iCol] = size(interCPos);
+        
+        % Get acceleration. convert mm/ms2 to m/s2
+        accCenter = diff(interCPos, 2) / interval * 1000;
+        [aRow aCol] = size(accCenter);
+        
+        output = zeros(iRow, 7);
+        output(:, 1) = interTime;
+        output(:, 2:4) = interCPos;
+        output(1:aRow, 5:7) = accCenter;
+        
+        outFileName = sprintf('%s/CenterPos%s', dirName, fileNo);
+        fid = fopen(outFileName, 'w');
+        fprintf(fid, 'time(ms), x(mm), y, z, ax(m/s2), ay, az\n');
         fclose(fid);
-        dlmwrite(fileName, centerP, '-append');
+        dlmwrite(outFileName, output, 'precision', 11, '-append');
     end
 end
