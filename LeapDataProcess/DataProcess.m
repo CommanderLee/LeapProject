@@ -1,6 +1,6 @@
 % Plot the trace data of Leap C++ project, and process them.
 % LI ZHEN, April 12th, 2014.
-for i = 1:1
+for i = 2:2
     ModelType = 2;                          % 2 types of 3D models
     AndroidFilePrefix = '0527';
     
@@ -83,20 +83,27 @@ for i = 1:1
         plot3(interCPos(:, 1), interCPos(:, 2), interCPos(:, 3), '.m');
         [iRow iCol] = size(interCPos);
         
+        % Get acceleration. convert mm/ms2 to m/s2
+        accCenter = diff(interCPos, 2) / (interval ^ 2) * 1000;
+        [aRow aCol] = size(accCenter);
+        
         % Get Direction X, Y, Z
         dirX = interP2 - interP4;
         dirY = interP1 - interP4;
         dirZ = interCPos - interP4;
-        
-        % Get acceleration. convert mm/ms2 to m/s2
-        accCenter = diff(interCPos, 2) / interval * 1000;
-        [aRow aCol] = size(accCenter);
-        
-        % Convert the center point acc. to direction X, Y, Z of the device
+        % Normalization
         zeroP = zeros(aRow, 3);
-        accX = sum(accCenter .* dirX(1:aRow, :), 2) ./ GetDistance(dirX(1:aRow, :), zeroP);
-        accY = sum(accCenter .* dirY(1:aRow, :), 2) ./ GetDistance(dirY(1:aRow, :), zeroP);
-        accZ = sum(accCenter .* dirZ(1:aRow, :), 2) ./ GetDistance(dirZ(1:aRow, :), zeroP);
+        dirXLen = GetDistance(dirX(2:aRow+1, :), zeroP);
+        dirYLen = GetDistance(dirY(2:aRow+1, :), zeroP);
+        dirZLen = GetDistance(dirZ(2:aRow+1, :), zeroP);
+        dirXNorm = dirX(2:aRow+1, :) ./ [dirXLen, dirXLen, dirXLen];
+        dirYNorm = dirY(2:aRow+1, :) ./ [dirYLen, dirYLen, dirYLen];
+        dirZNorm = dirZ(2:aRow+1, :) ./ [dirZLen, dirZLen, dirZLen];
+        
+        % Convert the center point acc. to direction X, Y, Z of the device        
+        accX = sum(accCenter .* dirXNorm, 2);
+        accY = sum(accCenter .* dirYNorm, 2);
+        accZ = sum(accCenter .* dirZNorm, 2);
         
         output = zeros(iRow, 7);
         output(:, 1) = interTime;
@@ -118,18 +125,18 @@ for i = 1:1
         androidTime = androidMat(:, 1) + androidTime;
         
         figure;
-        plot(interTime(1:aRow), accX', 'g');
+        plot(interTime(2:aRow+1) - interTime(2), accX', 'g');
         hold on;
-        plot(androidTime', androidMat(:, 2)', 'c');
+        plot(androidTime' - androidTime(1), androidMat(:, 2)', 'r');
         
         figure;
-        plot(interTime(1:aRow), accY', 'g');
+        plot(interTime(2:aRow+1) - interTime(2), accY', 'g');
         hold on;
-        plot(androidTime', androidMat(:, 3)', 'c');
+        plot(androidTime' - androidTime(1), androidMat(:, 3)', 'r');
         
         figure;
-        plot(interTime(1:aRow), accZ', 'g');
+        plot(interTime(2:aRow+1) - interTime(2), accZ', 'g');
         hold on;
-        plot(androidTime', androidMat(:, 4)', 'c');
+        plot(androidTime' - androidTime(1), androidMat(:, 4)', 'r');
     end
 end
