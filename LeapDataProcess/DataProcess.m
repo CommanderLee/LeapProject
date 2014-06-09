@@ -2,6 +2,7 @@
 % LI ZHEN, April 12th, 2014.
 for i = 1:1
     ModelType = 2;                          % 2 types of 3D models
+    AndroidFilePrefix = '0527';
     
     angle_1 = [66 88 0; -66 88 0; 0 88 66];
     angle_2 = [44 105.6 0; -44 105.6 0; 0 105.6 44];
@@ -109,6 +110,26 @@ for i = 1:1
         dlmwrite(outFileName, output, 'precision', 11, '-append');
         
         % Load Android App Data
+        AndroidFileName = sprintf('%s-%d (%d).csv', AndroidFilePrefix, ModelType, i);
+        androidMat = csvread(AndroidFileName, 1, 0, [1 0 1 0]);
+        androidTime = androidMat(1) - timeBase;
         
+        androidMat = csvread(AndroidFileName, 3, 0);
+        androidTime = androidMat(:, 1) + androidTime;
+        
+        figure;
+        plot(interTime(1:aRow), accX', 'g');
+        hold on;
+        plot(androidTime', androidMat(:, 2)', 'c');
+        
+        figure;
+        plot(interTime(1:aRow), accY', 'g');
+        hold on;
+        plot(androidTime', androidMat(:, 3)', 'c');
+        
+        figure;
+        plot(interTime(1:aRow), accZ', 'g');
+        hold on;
+        plot(androidTime', androidMat(:, 4)', 'c');
     end
 end

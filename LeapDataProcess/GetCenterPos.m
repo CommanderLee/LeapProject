@@ -17,8 +17,9 @@ for r = 1:row
     ratio = mean(ratios);
     currLen = stdLen * ratio;
     x0 = p1(r, :) + [0 0 10];
+    options = optimset('Algorithm', 'levenberg-marquardt', 'Display', 'final');
     [X, FV, EF, OUTPUT] = fsolve(@(x)distEquation(x, [p1(r, :); p2(r, :); p3(r, :)],...,
-        currLen), x0);
+        currLen), x0, options);
     
     centerPos(num, 1) = newTime(r);
     centerPos(num, 2:4) = X;
