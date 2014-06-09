@@ -203,15 +203,15 @@ void SampleListener::onFocusLost(const Controller& controller) {
 
 int main() {
 
-	std::string num("09");
+	std::string num("01");
 
 	std::cout << "Num: " << num << std::endl;
 
 	std::stringstream strF, strT;
-	strF << "FingerMove32" << num << ".csv";
+	strF << "FingerMove41" << num << ".csv";
 	fout.open(strF.str());
 	
-	strT << "ToolMove32" << num << ".csv";
+	strT << "ToolMove41" << num << ".csv";
 	tout.open(strT.str());
 
 	// Create a sample listener and controller
